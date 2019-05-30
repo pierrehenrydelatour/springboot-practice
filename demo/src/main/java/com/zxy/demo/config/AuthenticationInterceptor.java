@@ -6,7 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.zxy.demo.annotation.LoginRequired;
-import com.zxy.demo.mappers.UserService;
+import com.zxy.demo.service.mappers.userMapper;
 import com.zxy.demo.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,14 +17,13 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 
 @Component
 public class AuthenticationInterceptor implements HandlerInterceptor {
 
     @Autowired
-    UserService userService;
+    userMapper userMapper;
 
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object object) throws Exception {
@@ -40,6 +39,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         if (!(object instanceof HandlerMethod)) {
             return true;
         }
+
         HandlerMethod handlerMethod = (HandlerMethod) object;
         Method method = handlerMethod.getMethod();
 
@@ -47,13 +47,13 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             if (token == null) {
                 throw new RuntimeException("no token, sign in again");
             }
-            String email;
+            String idString;
             try {
-                email = JWT.decode(token).getAudience().get(0);
+                idString = JWT.decode(token).getAudience().get(0);
             } catch (JWTDecodeException e) {
                 throw new RuntimeException("token not exist");
             }
-            User user = userService.findByMail(email);
+            User user = userMapper.findById(Integer.parseInt(idString));
             if (user == null) {
                 throw new RuntimeException("invalid user");
             }
@@ -69,7 +69,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             httpServletRequest.setAttribute("currentUser", user);
             return true;
         }
-
             return true;
     }
 

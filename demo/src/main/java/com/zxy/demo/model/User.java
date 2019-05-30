@@ -3,10 +3,22 @@ package com.zxy.demo.model;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
     private int id;
     private String email;
     private String password;
+
+    public User() {
+
+    }
+
+    public User(int id, String email, String password) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+    }
 
     public int getId() {
         return id;
@@ -34,7 +46,7 @@ public class User {
 
     public String getToken(){
         String token = "";
-        token = JWT.create().withAudience(this.getEmail()).sign(Algorithm.HMAC256(this.getPassword()));
+        token = JWT.create().withAudience(String.valueOf(this.id)).sign(Algorithm.HMAC256(this.getPassword()));
         return token;
     }
 }

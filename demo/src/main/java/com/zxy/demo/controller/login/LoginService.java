@@ -1,24 +1,24 @@
-package com.zxy.demo.service;
+package com.zxy.demo.controller.login;
 
 import com.alibaba.fastjson.JSONObject;
 import com.zxy.demo.annotation.LoginRequired;
-import com.zxy.demo.mappers.UserService;
+import com.zxy.demo.service.mappers.userMapper;
 import com.zxy.demo.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jackson.JsonObjectDeserializer;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
 public class LoginService {
 
     @Autowired
-    UserService us;
+    userMapper us;
 
     @RequestMapping("/login")
     @ResponseBody
@@ -60,7 +60,22 @@ public class LoginService {
     @RequestMapping("/test")
     @ResponseBody
     @LoginRequired
-    public String test(){
-        return "success";
+    public String test(HttpServletRequest request){
+        User user = (User) request.getAttribute("currentUser");
+        return "success"+user.getEmail();
+    }
+
+    @RequestMapping("/logout")
+    @ResponseBody
+    public void logout(HttpServletRequest request, HttpServletResponse response){
+        Cookie[] cks =request.getCookies();
+        if(cks!=null){
+            for(Cookie ck : cks){
+                if(ck.getName().equals("token")){
+                    ck.setMaxAge(0);
+                    response.addCookie(ck);
+                }
+            }
+        }
     }
 }
